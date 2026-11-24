@@ -1,0 +1,7 @@
+<%- include('_head', { actions: '<a class="a-btn a-btn-primary" href="/admin/subscribers?format=csv">Export CSV</a>' }) %>
+<p class="a-muted"><%= subs.length %> newsletter subscribers. Export the CSV to import into Mailchimp, Brevo, MailerLite or similar.</p>
+<div class="a-card a-table-card"><table class="a-table"><thead><tr><th>Email</th><th>Subscribed</th><th></th></tr></thead><tbody>
+<% for (const x of subs) { %><tr><td><%= x.email %></td><td><%= H.fmtDate(x.created_at) %></td><td class="a-actions"><form method="post" action="/admin/subscribers/<%= x.id %>/delete" data-confirm="Remove <%= x.email %>?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="danger">Remove</button></form></td></tr><% } %>
+<% if (!subs.length) { %><tr><td colspan="3" class="a-muted">No subscribers yet.</td></tr><% } %>
+</tbody></table></div>
+<%- include('_foot') %>

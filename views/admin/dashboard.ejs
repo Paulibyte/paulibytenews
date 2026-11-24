@@ -1,0 +1,45 @@
+<%- include('_head', { actions: '<a class="a-btn a-btn-primary" href="/admin/posts/new">+ New article</a>' }) %>
+<p class="a-hello">Welcome back, <strong><%= me.name.split(' ')[0] %></strong>. Here's what's happening at PaulibyteNews.</p>
+<div class="a-stats">
+  <div class="a-stat"><span>Published</span><b><%= stats.published.toLocaleString() %></b></div>
+  <div class="a-stat"><span>Total views</span><b><%= stats.views.toLocaleString() %></b></div>
+  <div class="a-stat"><span>Subscribers</span><b><%= stats.subscribers.toLocaleString() %></b></div>
+  <div class="a-stat"><span>In testing</span><b><%= stats.testing %></b></div>
+  <% if (at('admin')) { %>
+  <div class="a-stat"><span>Ad impressions</span><b><%= stats.impressions.toLocaleString() %></b></div>
+  <div class="a-stat"><span>Ad clicks · CTR</span><b><%= stats.clicks.toLocaleString() %> <small><%= stats.impressions ? (stats.clicks / stats.impressions * 100).toFixed(2) : '0.00' %>%</small></b></div>
+  <div class="a-stat"><span>Affiliate clicks (30d)</span><b><%= stats.affiliate %></b></div>
+  <% } %>
+  <div class="a-stat"><span>Drafts</span><b><%= stats.drafts %></b></div>
+</div>
+
+<div class="a-grid2">
+  <% if (at('editor')) { %>
+  <section class="a-card">
+    <h2>Waiting for review <% if (pending.length) { %><em class="a-pill warn"><%= pending.length %></em><% } %></h2>
+    <% if (!pending.length) { %><p class="a-muted">Nothing pending. 🎉</p><% } %>
+    <% for (const p of pending) { %><a class="a-row" href="/admin/posts/<%= p.id %>/edit"><strong><%= p.title %></strong><span><%= p.author %> · <%= H.timeAgo(p.updated_at) %></span></a><% } %>
+  </section>
+  <% } %>
+  <section class="a-card">
+    <h2>My work in progress</h2>
+    <% if (!mine.length) { %><p class="a-muted">No drafts. <a href="/admin/posts/new">Start writing →</a></p><% } %>
+    <% for (const p of mine) { %><a class="a-row" href="/admin/posts/<%= p.id %>/edit"><strong><%= p.title %></strong><span><em class="a-pill s-<%= p.status %>"><%= p.status %></em> <%= H.timeAgo(p.updated_at) %><% if (p.editor_note) { %> · Note: <%= p.editor_note %><% } %></span></a><% } %>
+  </section>
+  <section class="a-card">
+    <h2>Top articles</h2>
+    <% for (const p of top) { %><a class="a-row" href="/article/<%= p.slug %>" target="_blank"><strong><%= p.title %></strong><span><%= p.views.toLocaleString() %> views · <%= p.type %></span></a><% } %>
+  </section>
+  <section class="a-card">
+    <h2>Review Lab</h2>
+    <% for (const pr of lab) { %><a class="a-row" href="/admin/lab/<%= pr.id %>"><strong><%= pr.name %></strong><span class="a-prog"><em class="a-pill s-<%= pr.status %>"><%= pr.status %></em><% if (pr.status === 'testing') { %><i><b style="width:<%= pr.progress %>%"></b></i><%= pr.progress %>%<% } %></span></a><% } %>
+    <a class="a-link" href="/admin/lab">Manage the lab →</a>
+  </section>
+  <% if (scheduled.length) { %>
+  <section class="a-card">
+    <h2>Scheduled</h2>
+    <% for (const p of scheduled) { %><a class="a-row" href="/admin/posts/<%= p.id %>/edit"><strong><%= p.title %></strong><span><%= H.fmtDate(p.published_at, true) %></span></a><% } %>
+  </section>
+  <% } %>
+</div>
+<%- include('_foot') %>

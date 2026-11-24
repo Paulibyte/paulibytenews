@@ -1,0 +1,84 @@
+<%- include('partials/head') %>
+<section class="lab-hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="live-dot"></span>Live · updated as we test</span>
+    <h1>The Review Lab</h1>
+    <p>This is our test bench, in the open. See every gadget we're putting through its paces right now, how far along each test is, what's queued next — and vote for what we review.</p>
+    <div class="lab-stats">
+      <div><b><%= testing.length %></b><span>Testing now</span></div>
+      <div><b><%= queued.length %></b><span>In the queue</span></div>
+      <div><b><%= done.length %></b><span>Reviews published</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="lab-section">
+    <div class="sec-head"><h2><span class="live-dot"></span>On the bench now</h2></div>
+    <% if (!testing.length) { %><div class="empty">Nothing on the bench right now — check the queue below.</div><% } %>
+    <div class="lab-grid">
+      <% for (const pr of testing) { const doneN = pr.tests.filter(t => t.done).length; %>
+      <article class="lab-card" id="p<%= pr.id %>">
+        <a href="/lab/<%= pr.slug %>" class="lab-img"><% if (pr.image) { %><img src="<%= pr.image %>" alt="<%= pr.name %>" loading="lazy"><% } %><span class="status-pill testing">Testing</span></a>
+        <div class="lab-body">
+          <span class="lab-kind"><%= pr.brand %> · <%= pr.kind %></span>
+          <h3><a href="/lab/<%= pr.slug %>"><%= pr.name %></a></h3>
+          <% if (pr.summary) { %><p><%= pr.summary %></p><% } %>
+          <div class="lab-progress"><span class="bar lg"><i style="width:<%= pr.progress %>%"></i></span><b><%= pr.progress %>%</b></div>
+          <ul class="lab-meta">
+            <% if (pr.tester_name) { %><li><span>Tester</span><%= pr.tester_name %></li><% } %>
+            <% if (pr.started_at) { %><li><span>Started</span><%= H.fmtDate(pr.started_at) %></li><% } %>
+            <% if (pr.expected_at) { %><li><span>Review due</span><%= H.fmtDate(pr.expected_at) %></li><% } %>
+            <% if (pr.tests.length) { %><li><span>Checklist</span><%= doneN %>/<%= pr.tests.length %> tests</li><% } %>
+          </ul>
+          <a class="btn btn-ghost btn-sm" href="/lab/<%= pr.slug %>">Follow the test log →</a>
+        </div>
+      </article>
+      <% } %>
+    </div>
+  </section>
+
+  <%- zone('lab', { placeholder: true }) %>
+
+  <div class="lab-two">
+    <section class="lab-section">
+      <div class="sec-head"><h2>Up next — vote for what we test</h2></div>
+      <% if (!queued.length) { %><div class="empty">The queue is empty.</div><% } %>
+      <div class="queue-list">
+        <% queued.forEach((pr, i) => { const has = voted.includes(String(pr.id)); %>
+        <div class="queue-item" id="p<%= pr.id %>">
+          <span class="q-rank"><%= i + 1 %></span>
+          <a href="/lab/<%= pr.slug %>" class="q-img"><% if (pr.image) { %><img src="<%= pr.image %>" alt="" loading="lazy"><% } %></a>
+          <div class="q-body"><a href="/lab/<%= pr.slug %>"><strong><%= pr.name %></strong></a><span><%= pr.kind %><%= pr.price ? ' · ' + pr.price : '' %></span></div>
+          <form method="post" action="/lab/<%= pr.id %>/vote"><input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="vote-btn <%= has ? 'voted' : '' %>" <%= has ? 'disabled' : '' %> aria-label="Vote for <%= pr.name %>">▲ <b><%= pr.votes %></b></button></form>
+        </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="lab-section">
+      <div class="sec-head"><h2>Latest lab notes</h2></div>
+      <div class="timeline">
+        <% for (const u of updates) { %>
+        <div class="tl-item"><span class="tl-dot"></span><div><a href="/lab/<%= u.product_slug %>"><strong><%= u.product_name %></strong></a><span class="tl-time"><%= H.timeAgo(u.created_at) %><%= u.user_name ? ' · ' + u.user_name : '' %></span><p><%= u.note %></p></div></div>
+        <% } %>
+        <% if (!updates.length) { %><div class="empty">No notes yet.</div><% } %>
+      </div>
+    </section>
+  </div>
+
+  <section class="lab-section">
+    <div class="sec-head"><h2>Tested & reviewed</h2><a href="/reviews">All reviews →</a></div>
+    <div class="lab-grid small">
+      <% for (const pr of done) { %>
+      <a class="done-card" href="<%= pr.post_slug ? '/article/' + pr.post_slug : '/lab/' + pr.slug %>">
+        <span class="lab-img"><% if (pr.image) { %><img src="<%= pr.image %>" alt="" loading="lazy"><% } %><span class="status-pill <%= pr.status %>"><%= pr.status === 'longterm' ? 'Long-term test' : 'Reviewed' %></span></span>
+        <strong><%= pr.name %></strong>
+        <% if (pr.rv && pr.rv.score) { %><span class="done-score"><b><%= Number(pr.rv.score).toFixed(1) %></b>/10 · <%= H.scoreLabel(Number(pr.rv.score)) %></span><% } %>
+      </a>
+      <% } %>
+    </div>
+  </section>
+</div>
+<%- include('partials/foot') %>

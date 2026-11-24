@@ -1,0 +1,52 @@
+<%- include('_head', { actions: '<a class="a-btn a-btn-primary" href="/admin/ads/new">+ New ad</a>' }) %>
+<section class="a-card">
+  <h2>Ad placements</h2>
+  <p class="a-muted">Each zone rotates its active ads by weight. Empty zones show an “Advertise here” box linking to your <a href="/advertise" target="_blank">Advertise page</a> (header, sidebar, in-article, end of article, homepage feed and lab). Set your Google AdSense publisher ID under <a href="/admin/settings">Settings</a>, then paste ad-unit code into an HTML ad.</p>
+  <div class="a-zones">
+    <% for (const [k, z] of Object.entries(zones)) { const n = ads.filter(a => a.zone === k && a.active).length; %>
+    <a href="/admin/ads/new?zone=<%= k %>" class="a-zone <%= n ? 'has' : '' %>"><strong><%= z.label %></strong><small><%= z.size %></small><span><%= n %> active</span></a>
+    <% } %>
+  </div>
+</section>
+<section class="a-card a-table-card">
+  <table class="a-table">
+    <thead><tr><th>Ad</th><th>Zone</th><th class="hide-m">Schedule</th><th>Impr.</th><th>Clicks</th><th>CTR</th><th></th></tr></thead>
+    <tbody>
+    <% if (!ads.length) { %><tr><td colspan="7" class="a-muted">No ads yet.</td></tr><% } %>
+    <% for (const a of ads) { %>
+    <tr class="<%= a.active ? '' : 'a-off' %>">
+      <td><a href="/admin/ads/<%= a.id %>" class="a-title"><%= a.name %></a><span class="a-flags"><%= a.advertiser %> · <%= a.type %><%= a.device !== 'all' ? ' · ' + a.device : '' %><%= a.active ? '' : ' · paused' %></span></td>
+      <td><%= zones[a.zone] ? zones[a.zone].label : a.zone %></td>
+      <td class="hide-m"><%= a.start_at ? H.fmtDate(a.start_at) : 'now' %> → <%= a.end_at ? H.fmtDate(a.end_at) : 'open' %></td>
+      <td><%= a.impressions.toLocaleString() %></td><td><%= a.clicks.toLocaleString() %></td>
+      <td><%= a.impressions ? (a.clicks / a.impressions * 100).toFixed(2) : '0.00' %>%</td>
+      <td class="a-actions">
+        <form method="post" action="/admin/ads/<%= a.id %>/toggle"><input type="hidden" name="_csrf" value="<%= csrf %>"><button><%= a.active ? 'Pause' : 'Activate' %></button></form>
+        <form method="post" action="/admin/ads/<%= a.id %>/reset" data-confirm="Reset this ad's stats to zero?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button>Reset</button></form>
+        <form method="post" action="/admin/ads/<%= a.id %>/delete" data-confirm="Delete this ad?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="danger">Delete</button></form>
+      </td>
+    </tr>
+    <% } %>
+    </tbody>
+  </table>
+</section>
+<div class="a-grid2">
+  <section class="a-card" id="inquiries">
+    <h2>Advertiser enquiries</h2>
+    <% if (!inquiries.length) { %><p class="a-muted">No enquiries yet. They arrive from the public Advertise page.</p><% } %>
+    <% for (const q of inquiries) { %>
+    <div class="a-note <%= q.handled ? 'a-off' : '' %>">
+      <strong><%= q.name %></strong><%= q.company ? ' · ' + q.company : '' %> <small class="a-muted"><%= H.timeAgo(q.created_at) %></small>
+      <div><a href="mailto:<%= q.email %>"><%= q.email %></a><%= q.phone ? ' · ' + q.phone : '' %><%= q.package ? ' · ' + q.package : '' %></div>
+      <% if (q.message) { %><p><%= q.message %></p><% } %>
+      <form method="post" action="/admin/inquiries/<%= q.id %>/handled"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-btn a-btn-sm"><%= q.handled ? 'Mark as open' : 'Mark handled' %></button></form>
+    </div>
+    <% } %>
+  </section>
+  <section class="a-card">
+    <h2>Affiliate clicks · last 30 days</h2>
+    <% if (!affiliate.length) { %><p class="a-muted">“Where to buy” clicks on reviews will show here.</p><% } %>
+    <% for (const a of affiliate) { %><div class="a-row"><strong><%= a.title || 'Deleted article' %></strong><span><%= a.label %> · <b><%= a.n %></b> clicks</span></div><% } %>
+  </section>
+</div>
+<%- include('_foot') %>

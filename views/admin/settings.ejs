@@ -1,0 +1,39 @@
+<%- include('_head') %>
+<form method="post" action="/admin/settings" class="a-stack">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <section class="a-card a-stack">
+    <h2>Site</h2>
+    <div class="a-form-grid">
+      <label>Site name<input name="site_name" value="<%= s.site_name %>"></label>
+      <label>Site URL (no trailing slash)<input name="site_url" value="<%= s.site_url %>"></label>
+      <label class="full">Tagline<input name="tagline" value="<%= s.tagline %>"></label>
+      <label>Contact email<input name="contact_email" value="<%= s.contact_email %>"></label>
+      <label>Advertising email<input name="ads_email" value="<%= s.ads_email %>"></label>
+      <label>Articles per listing page<input type="number" name="posts_per_page" value="<%= s.posts_per_page %>"></label>
+    </div>
+    <label>About page (HTML)<textarea name="about_html" rows="5" class="a-code"><%= s.about_html %></textarea></label>
+  </section>
+  <section class="a-card a-stack">
+    <h2>Social links</h2>
+    <div class="a-form-grid">
+      <% for (const [k, l] of [['social_x','X / Twitter'],['social_facebook','Facebook'],['social_instagram','Instagram'],['social_youtube','YouTube'],['social_linkedin','LinkedIn'],['social_tiktok','TikTok']]) { %><label><%= l %><input name="<%= k %>" value="<%= s[k] %>" placeholder="https://"></label><% } %>
+    </div>
+  </section>
+  <section class="a-card a-stack">
+    <h2>Monetisation</h2>
+    <div class="a-form-grid">
+      <label>Google AdSense publisher ID<input name="adsense_client" value="<%= s.adsense_client %>" placeholder="ca-pub-1234567890123456"></label>
+      <label>In-article ad after paragraph #<input type="number" name="in_article_ad_after" min="1" value="<%= s.in_article_ad_after %>"></label>
+      <label>…then repeat every N paragraphs (0 = once)<input type="number" name="in_article_ad_every" min="0" value="<%= s.in_article_ad_every %>"></label>
+    </div>
+    <label>ads.txt contents <small>(auto-generated from your AdSense ID if empty)</small><textarea name="ads_txt" rows="3" class="a-code"><%= s.ads_txt %></textarea></label>
+    <label>Advertise page intro (HTML)<textarea name="advertise_html" rows="3" class="a-code"><%= s.advertise_html %></textarea></label>
+    <label>Rate card — one placement per line: <code>Name|Size|Description</code><textarea name="rate_card" rows="6" class="a-code"><%= s.rate_card %></textarea></label>
+  </section>
+  <section class="a-card a-stack">
+    <h2>Analytics & verification</h2>
+    <label>Code inserted in &lt;head&gt; on every public page (Google Analytics, Search Console, Meta pixel…)<textarea name="head_code" rows="5" class="a-code"><%= s.head_code %></textarea></label>
+  </section>
+  <button class="a-btn a-btn-primary">Save settings</button>
+</form>
+<%- include('_foot') %>

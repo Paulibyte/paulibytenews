@@ -1,0 +1,11 @@
+<%- include('_head') %>
+<form class="a-card a-stack a-narrow" method="post" action="/admin/profile?_csrf=<%= csrf %>" enctype="multipart/form-data">
+  <div class="a-img-field"><span class="a-av lg"><% if (u.avatar) { %><img src="<%= u.avatar %>" alt=""><% } else { %><%= u.name[0] %><% } %></span><label>Profile photo<input type="file" name="avatar" accept="image/*"></label></div>
+  <label>Display name<input name="name" value="<%= u.name %>" required></label>
+  <label>Bio (shown under your articles)<textarea name="bio" rows="3"><%= u.bio %></textarea></label>
+  <label>X / Twitter handle<input name="twitter" value="<%= u.twitter %>" placeholder="@handle"></label>
+  <h3 class="a-mt">Change password</h3>
+  <div class="a-form-grid"><label>Current password<input type="password" name="current" autocomplete="current-password"></label><label>New password<input type="password" name="password" minlength="8" autocomplete="new-password"></label></div>
+  <button class="a-btn a-btn-primary">Save profile</button>
+</form>
+<%- include('_foot') %>

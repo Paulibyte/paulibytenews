@@ -1,0 +1,33 @@
+<%- include('_head') %>
+<form class="a-card a-stack a-narrow" method="post" action="/admin/ads/save?_csrf=<%= csrf %>" enctype="multipart/form-data">
+  <input type="hidden" name="id" value="<%= ad.id %>">
+  <div class="a-form-grid">
+    <label>Ad name (internal)<input name="name" value="<%= ad.name || '' %>" required placeholder="Jumia Black Friday – leaderboard"></label>
+    <label>Advertiser<input name="advertiser" value="<%= ad.advertiser || '' %>"></label>
+    <label>Placement<select name="zone"><% for (const [k, z] of Object.entries(zones)) { %><option value="<%= k %>" <%= ad.zone === k ? 'selected' : '' %>><%= z.label %> — <%= z.size %></option><% } %></select></label>
+    <label>Show on<select name="device"><% for (const [v,l] of [['all','All devices'],['desktop','Desktop only'],['mobile','Mobile only']]) { %><option value="<%= v %>" <%= ad.device === v ? 'selected' : '' %>><%= l %></option><% } %></select></label>
+    <label>Starts<input type="datetime-local" name="start_at" value="<%= toLocalInput(ad.start_at) %>"></label>
+    <label>Ends<input type="datetime-local" name="end_at" value="<%= toLocalInput(ad.end_at) %>"></label>
+    <label>Rotation weight<input type="number" name="weight" min="1" value="<%= ad.weight || 1 %>"></label>
+    <label class="a-check a-check-pad"><input type="checkbox" name="active" value="1" <%= ad.active ? 'checked' : '' %>> Active</label>
+  </div>
+  <div class="a-tabs" data-adtype>
+    <label><input type="radio" name="type" value="image" <%= ad.type !== 'html' ? 'checked' : '' %>> Image banner</label>
+    <label><input type="radio" name="type" value="html" <%= ad.type === 'html' ? 'checked' : '' %>> HTML / AdSense code</label>
+  </div>
+  <div data-for="image" <%= ad.type === 'html' ? 'hidden' : '' %> class="a-stack">
+    <div class="a-img-field"><% if (ad.image) { %><img src="<%= ad.image %>" alt=""><label class="a-check"><input type="checkbox" name="remove_image" value="1"> Remove</label><% } %><label>Banner image<input type="file" name="image" accept="image/*"></label></div>
+    <div class="a-img-field"><% if (ad.image_mobile) { %><img src="<%= ad.image_mobile %>" alt=""><label class="a-check"><input type="checkbox" name="remove_image_mobile" value="1"> Remove</label><% } %><label>Mobile version (optional, shown on phones)<input type="file" name="image_mobile" accept="image/*"></label></div>
+    <label>Click-through URL<input name="link" type="url" value="<%= ad.link || '' %>" placeholder="https://advertiser.com/landing?utm_source=paulibytenews"></label>
+    <label>Alt text<input name="alt" value="<%= ad.alt || '' %>"></label>
+  </div>
+  <div data-for="html" <%= ad.type === 'html' ? '' : 'hidden' %>>
+    <label>Ad code<textarea name="html" rows="8" class="a-code" placeholder="<ins class=&quot;adsbygoogle&quot; data-ad-client=&quot;ca-pub-…&quot; data-ad-slot=&quot;…&quot; …></ins>"><%= ad.html || '' %></textarea></label>
+    <p class="a-muted">Paste a Google AdSense ad unit, or any ad network/sponsor HTML. Only admins can add code here. AdSense units are activated automatically.</p>
+  </div>
+  <div class="ed-row"><button class="a-btn a-btn-primary">Save ad</button><a class="a-btn a-btn-ghost" href="/admin/ads">Cancel</a></div>
+</form>
+<script>
+document.querySelectorAll('[data-adtype] input').forEach(r => r.addEventListener('change', () => document.querySelectorAll('[data-for]').forEach(d => d.hidden = d.dataset.for !== r.value)));
+</script>
+<%- include('_foot') %>

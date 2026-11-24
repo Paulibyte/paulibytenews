@@ -1,0 +1,46 @@
+<%- include('partials/head') %>
+<section class="reviews-hero">
+  <div class="wrap">
+    <span class="eyebrow">Lab-tested. Independently scored.</span>
+    <h1>Reviews</h1>
+    <p>Every product is used for days or weeks before we score it. Follow what's being tested right now in the <a href="/lab">Review Lab</a>.</p>
+    <% if (choice.length) { %>
+    <div class="choice-row">
+      <% for (const p of choice) { %>
+      <a href="<%= p.url %>" class="choice-card">
+        <span class="choice-img"><% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt="" loading="lazy"><% } %></span>
+        <span class="award"><%= p.review.award %></span>
+        <strong><%= p.review.product || p.title %></strong>
+        <span class="choice-score"><%= Number(p.review.score).toFixed(1) %><small>/10</small></span>
+      </a>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+</section>
+<div class="wrap">
+  <div class="filter-bar">
+    <div class="chips">
+      <a href="/reviews?sort=<%= sort %>" class="chip <%= !kind ? 'on' : '' %>">All</a>
+      <% for (const k of kinds) { %><a href="/reviews?kind=<%= encodeURIComponent(k) %>&sort=<%= sort %>" class="chip <%= kind === k ? 'on' : '' %>"><%= k %></a><% } %>
+    </div>
+    <div class="sort">Sort: <a href="/reviews?kind=<%= encodeURIComponent(kind) %>&sort=new" class="<%= sort === 'new' ? 'on' : '' %>">Newest</a> · <a href="/reviews?kind=<%= encodeURIComponent(kind) %>&sort=score" class="<%= sort === 'score' ? 'on' : '' %>">Top scored</a></div>
+  </div>
+  <% if (!posts.length) { %><div class="empty">No reviews yet.</div><% } %>
+  <div class="review-list">
+    <% posts.forEach((p, i) => { const r = p.review || {}; %>
+    <a class="review-item" href="<%= p.url %>">
+      <span class="ri-img"><% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt="" loading="lazy"><% } %></span>
+      <span class="ri-body">
+        <span class="kicker"><span class="kick-type"><%= r.kind || 'Review' %></span><% if (r.award) { %><span class="award award-sm"><%= r.award %></span><% } %></span>
+        <strong><%= p.title %></strong>
+        <em><%= r.verdict_short || p.summary %></em>
+        <span class="meta"><span><%= p.author_name %></span><span><%= H.fmtDate(p.published_at) %></span><% if (r.price) { %><span><%= r.price %></span><% } %></span>
+      </span>
+      <span class="ri-score"><b><%= r.score ? Number(r.score).toFixed(1) : '–' %></b><small><%= r.score ? H.scoreLabel(Number(r.score)) : '' %></small></span>
+    </a>
+    <% if (i === 3) { %><%- zone('home_feed') %><% } %>
+    <% }) %>
+  </div>
+</div>
+<%- include('partials/foot') %>

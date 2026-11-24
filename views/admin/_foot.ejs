@@ -1,0 +1,9 @@
+  </div>
+</div>
+<div class="a-scrim" data-aside-toggle></div>
+<script>
+document.querySelectorAll('[data-aside-toggle]').forEach(b => b.addEventListener('click', () => document.body.classList.toggle('aside-open')));
+document.querySelectorAll('[data-confirm]').forEach(f => f.addEventListener('submit', e => { if (!confirm(f.dataset.confirm)) e.preventDefault(); }));
+</script>
+</body>
+</html>

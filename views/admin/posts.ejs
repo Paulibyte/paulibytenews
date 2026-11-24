@@ -1,0 +1,27 @@
+<%- include('_head', { actions: '<a class="a-btn" href="/admin/posts/new?type=review">+ Review</a> <a class="a-btn a-btn-primary" href="/admin/posts/new">+ Article</a>' }) %>
+<form class="a-filters" method="get">
+  <input name="q" value="<%= f.q %>" placeholder="Search title or tag…">
+  <select name="status"><option value="">All statuses</option><% for (const st of ['draft','pending','published','scheduled','rejected']) { %><option <%= f.status === st ? 'selected' : '' %>><%= st %></option><% } %></select>
+  <select name="type"><option value="">All types</option><% for (const t of ['news','review','feature','howto','opinion']) { %><option <%= f.type === t ? 'selected' : '' %>><%= t %></option><% } %></select>
+  <% if (at('editor')) { %><label class="a-check"><input type="checkbox" name="mine" value="1" <%= f.mine ? 'checked' : '' %>> Mine only</label><% } %>
+  <button class="a-btn">Filter</button>
+</form>
+<div class="a-card a-table-card">
+  <table class="a-table">
+    <thead><tr><th>Title</th><th>Status</th><th class="hide-m">Type</th><th class="hide-m">Author</th><th class="hide-m">Views</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+    <% if (!posts.length) { %><tr><td colspan="7" class="a-muted">No articles found.</td></tr><% } %>
+    <% for (const p of posts) { const sched = p.status === 'published' && p.published_at > new Date().toISOString().replace('T',' ').slice(0,19); %>
+      <tr>
+        <td><a href="/admin/posts/<%= p.id %>/edit" class="a-title"><%= p.title %></a>
+          <span class="a-flags"><% if (p.is_featured) { %><em class="a-pill">Featured</em><% } %><% if (p.is_breaking) { %><em class="a-pill hot">Breaking</em><% } %><% if (p.is_sponsored) { %><em class="a-pill gold">Sponsored</em><% } %><%= p.cat_name || '' %></span></td>
+        <td><em class="a-pill s-<%= sched ? 'scheduled' : p.status %>"><%= sched ? 'scheduled' : p.status %></em></td>
+        <td class="hide-m"><%= p.type %></td><td class="hide-m"><%= p.author %></td><td class="hide-m"><%= p.views %></td>
+        <td><%= H.timeAgo(p.updated_at) %></td>
+        <td class="a-actions"><a href="/article/<%= p.slug %>?preview=1" target="_blank">View</a></td>
+      </tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('_foot') %>

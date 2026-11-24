@@ -1,0 +1,61 @@
+<%- include('partials/head') %>
+<div class="wrap">
+  <nav class="crumbs pad"><a href="/">Home</a> / <a href="/lab">Review Lab</a> / <%= pr.name %></nav>
+  <section class="lp-head">
+    <div class="lp-img"><% if (pr.image) { %><img src="<%= pr.image %>" alt="<%= pr.name %>"><% } %></div>
+    <div class="lp-info">
+      <span class="status-pill <%= pr.status %>"><%= {queued:'In the queue',testing:'Testing now',published:'Review published',longterm:'Long-term test'}[pr.status] %></span>
+      <span class="lab-kind"><%= pr.brand %> · <%= pr.kind %></span>
+      <h1><%= pr.name %></h1>
+      <% if (pr.summary) { %><p class="lp-sum"><%= pr.summary %></p><% } %>
+      <% if (pr.price) { %><div class="rs-price"><%= pr.price %></div><% } %>
+      <% if (pr.status === 'testing' || pr.status === 'longterm') { %>
+        <div class="lab-progress"><span class="bar lg"><i style="width:<%= pr.progress %>%"></i></span><b><%= pr.progress %>%</b></div>
+      <% } %>
+      <ul class="lab-meta">
+        <% if (pr.tester_name) { %><li><span>Tester</span><a href="/author/<%= pr.tester_uid %>"><%= pr.tester_name %></a></li><% } %>
+        <% if (pr.started_at) { %><li><span>Started</span><%= H.fmtDate(pr.started_at) %></li><% } %>
+        <% if (pr.expected_at) { %><li><span>Review due</span><%= H.fmtDate(pr.expected_at) %></li><% } %>
+        <% if (pr.test_days) { %><li><span>Test period</span><%= pr.test_days %> days</li><% } %>
+      </ul>
+      <% if (pr.post_slug) { %>
+        <a class="btn btn-accent" href="/article/<%= pr.post_slug %>">Read the full review<%= pr.rv && pr.rv.score ? ' · ' + Number(pr.rv.score).toFixed(1) + '/10' : '' %> →</a>
+      <% } else if (pr.status === 'queued') { %>
+        <form method="post" action="/lab/<%= pr.id %>/vote" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn btn-accent" <%= voted ? 'disabled' : '' %>><%= voted ? 'Thanks for voting' : 'Vote to test this next' %> · <%= pr.votes %></button></form>
+      <% } %>
+    </div>
+  </section>
+
+  <div class="lp-grid">
+    <div>
+      <section class="lab-section">
+        <div class="sec-head"><h2>Test log</h2></div>
+        <div class="timeline">
+          <% for (const u of updates) { %>
+          <div class="tl-item"><span class="tl-dot"></span><div><span class="tl-time"><%= H.fmtDate(u.created_at, true) %><%= u.user_name ? ' · ' + u.user_name : '' %></span><p><%= u.note %></p><% if (u.image) { %><img src="<%= u.image %>" alt="" loading="lazy" class="tl-img"><% } %></div></div>
+          <% } %>
+          <% if (!updates.length) { %><div class="empty">Testing notes will appear here as we go.</div><% } %>
+        </div>
+      </section>
+      <% if (coverage.length) { %>
+      <section class="lab-section"><div class="sec-head"><h2>Our coverage</h2></div>
+        <div class="grid-cards g2"><% for (const p of coverage) { %><%- include('partials/card', { p, variant: 'std' }) %><% } %></div></section>
+      <% } %>
+    </div>
+    <div>
+      <% if (pr.tests.length) { %>
+      <section class="side-box"><h4 class="side-title">Test checklist</h4>
+        <ul class="checklist"><% for (const t of pr.tests) { %><li class="<%= t.done ? 'done' : '' %>"><span></span><%= t.label %></li><% } %></ul>
+      </section>
+      <% } %>
+      <% if (pr.specs.length) { %>
+      <section class="side-box specs"><h4 class="side-title">Specifications</h4>
+        <table><% for (const sp of pr.specs) { %><tr><th><%= sp.label %></th><td><%= sp.value %></td></tr><% } %></table>
+      </section>
+      <% } %>
+      <%- zone('sidebar_top', { placeholder: true }) %>
+    </div>
+  </div>
+</div>
+<%- include('partials/foot') %>

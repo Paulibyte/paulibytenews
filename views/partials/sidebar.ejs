@@ -1,0 +1,27 @@
+<aside class="sidebar">
+  <%- zone('sidebar_top', { placeholder: true }) %>
+
+  <section class="side-box">
+    <h4 class="side-title">Trending</h4>
+    <ol class="trend-list">
+      <% for (const t of sideTrending()) { %><li><a href="<%= t.url %>"><%= t.title %></a><span><%= t.cat_name %> · <%= H.timeAgo(t.published_at) %></span></li><% } %>
+    </ol>
+  </section>
+
+  <% const lab = sideLab(); if (lab.length) { %>
+  <section class="side-box side-lab">
+    <h4 class="side-title"><span class="live-dot"></span>On the test bench</h4>
+    <% for (const pr of lab) { %>
+      <a class="bench-mini" href="/lab/<%= pr.slug %>">
+        <span class="bench-thumb"><% if (pr.image) { %><img src="<%= pr.image %>" alt="" loading="lazy"><% } %></span>
+        <span class="bench-info"><strong><%= pr.name %></strong>
+          <% if (pr.status === 'testing') { %><span class="bar"><i style="width:<%= pr.progress %>%"></i></span><em>Testing · <%= pr.progress %>%</em><% } else { %><em class="q">Up next</em><% } %>
+        </span>
+      </a>
+    <% } %>
+    <a class="side-more" href="/lab">See the full Review Lab →</a>
+  </section>
+  <% } %>
+
+  <div class="sticky-slot"><%- zone('sidebar_sticky') %></div>
+</aside>

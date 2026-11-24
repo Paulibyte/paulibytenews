@@ -1,0 +1,74 @@
+<%- include('_head', { actions: pr.id ? `<a class="a-btn" href="/lab/${pr.slug}" target="_blank">View public page ↗</a> <a class="a-btn a-btn-primary" href="/admin/posts/new?type=review&product=${pr.id}">Write review</a>` : '' }) %>
+<div class="a-grid2 wide-left">
+  <form class="a-card a-stack" method="post" action="/admin/lab/save?_csrf=<%= csrf %>" enctype="multipart/form-data" <%= at('editor') ? '' : 'inert' %>>
+    <input type="hidden" name="id" value="<%= pr.id %>"><input type="hidden" name="image_url" value="<%= pr.image || '' %>">
+    <h2>Product details</h2>
+    <div class="a-form-grid">
+      <label>Product name<input name="name" value="<%= pr.name %>" required></label>
+      <label>Brand<input name="brand" value="<%= pr.brand || '' %>"></label>
+      <label>Type<input name="kind" value="<%= pr.kind || '' %>" placeholder="Smartphone" list="kinds2"></label>
+      <datalist id="kinds2"><option>Smartphone</option><option>Laptop</option><option>Tablet</option><option>Earbuds</option><option>Headphones</option><option>Smartwatch</option><option>TV</option><option>Camera</option><option>Router</option><option>Power bank</option><option>Console</option></datalist>
+      <label>Price<input name="price" value="<%= pr.price || '' %>" placeholder="₦350,000"></label>
+    </div>
+    <label>Short summary (shown on the Lab page)<textarea name="summary" rows="2"><%= pr.summary || '' %></textarea></label>
+    <div class="a-img-field"><% if (pr.image) { %><img src="<%= pr.image %>" alt=""><% } %><label>Product photo<input type="file" name="image" accept="image/*"></label></div>
+
+    <h2 class="a-mt">Testing status</h2>
+    <div class="a-form-grid">
+      <label>Status<select name="status"><% for (const [v,l] of [['queued','In the queue'],['testing','Testing now'],['published','Review published'],['longterm','Long-term test']]) { %><option value="<%= v %>" <%= pr.status === v ? 'selected' : '' %>><%= l %></option><% } %></select></label>
+      <label>Tester<select name="tester_id"><option value="">—</option><% for (const u of users) { %><option value="<%= u.id %>" <%= pr.tester_id === u.id ? 'selected' : '' %>><%= u.name %></option><% } %></select></label>
+      <label>Started<input type="date" name="started_at" value="<%= pr.started_at || '' %>"></label>
+      <label>Review due<input type="date" name="expected_at" value="<%= pr.expected_at || '' %>"></label>
+      <label>Test period (days)<input type="number" name="test_days" value="<%= pr.test_days || '' %>"></label>
+      <label>Progress %<input type="number" name="progress" min="0" max="100" value="<%= pr.progress || 0 %>"></label>
+      <label>Order on page<input type="number" name="sort" value="<%= pr.sort || 0 %>"></label>
+    </div>
+
+    <h3 class="a-mt">Test checklist <button type="button" class="a-btn a-btn-sm" data-add="tests">+ Add test</button></h3>
+    <label class="a-check"><input type="checkbox" name="auto_progress" value="1" checked> Set progress automatically from the checklist</label>
+    <div data-list="tests">
+      <% pr.tests.forEach((t, i) => { %><div class="ed-line"><input type="checkbox" name="test_done" value="<%= i %>" <%= t.done ? 'checked' : '' %>><input name="test_label" value="<%= t.label %>"><button type="button" class="a-x" data-del>×</button></div><% }) %>
+    </div>
+
+    <h3 class="a-mt">Specifications <button type="button" class="a-btn a-btn-sm" data-add="specs">+ Add spec</button></h3>
+    <div data-list="specs">
+      <% pr.specs.forEach(sp => { %><div class="ed-line"><input name="spec_label" value="<%= sp.label %>" placeholder="Spec"><input name="spec_value" value="<%= sp.value %>" placeholder="Value"><button type="button" class="a-x" data-del>×</button></div><% }) %>
+    </div>
+    <button class="a-btn a-btn-primary a-mt">Save product</button>
+  </form>
+
+  <div class="a-stack">
+    <% if (pr.id) { %>
+    <section class="a-card">
+      <h2>Post a lab note</h2>
+      <p class="a-muted">Short, live updates from testing — they show on the public test log.</p>
+      <form method="post" action="/admin/lab/<%= pr.id %>/update?_csrf=<%= csrf %>" enctype="multipart/form-data" class="a-stack">
+        <textarea name="note" rows="3" required placeholder="Day 4: battery lasted 9h 40m of mixed use with 120Hz on…"></textarea>
+        <div class="a-form-grid"><label>Photo (optional)<input type="file" name="image" accept="image/*"></label><label>Update progress %<input type="number" name="progress" min="0" max="100" placeholder="<%= pr.progress %>"></label></div>
+        <button class="a-btn a-btn-primary">Post note</button>
+      </form>
+    </section>
+    <section class="a-card">
+      <h2>Test log</h2>
+      <% for (const u of updates) { %>
+      <div class="a-note"><small><%= H.fmtDate(u.created_at, true) %> · <%= u.user_name %></small><p><%= u.note %></p><% if (u.image) { %><img src="<%= u.image %>" alt=""><% } %>
+        <% if (at('editor')) { %><form method="post" action="/admin/lab/update/<%= u.id %>/delete" data-confirm="Delete this note?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-del">Delete</button></form><% } %></div>
+      <% } %>
+      <% if (!updates.length) { %><p class="a-muted">No notes yet.</p><% } %>
+    </section>
+    <section class="a-card">
+      <h2>Linked articles</h2>
+      <% for (const rv of reviews) { %><a class="a-row" href="/admin/posts/<%= rv.id %>/edit"><strong><%= rv.title %></strong><span><em class="a-pill s-<%= rv.status %>"><%= rv.status %></em></span></a><% } %>
+      <% if (!reviews.length) { %><p class="a-muted">None yet. <a href="/admin/posts/new?type=review&product=<%= pr.id %>">Start the review →</a> (product name, specs and price are pre-filled)</p><% } %>
+    </section>
+    <% if (at('editor')) { %><form method="post" action="/admin/lab/<%= pr.id %>/delete" data-confirm="Remove this product and its test log from the lab?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-del">Remove product from lab</button></form><% } %>
+    <% } else { %><section class="a-card"><p class="a-muted">Save the product first, then you can post lab notes and photos.</p></section><% } %>
+  </div>
+</div>
+<script>
+const tpl = { tests: () => { const i = document.querySelectorAll('[data-list=tests] .ed-line').length; return `<input type="checkbox" name="test_done" value="${i}"><input name="test_label" placeholder="Test name"><button type="button" class="a-x" data-del>×</button>`; },
+  specs: () => `<input name="spec_label" placeholder="Spec"><input name="spec_value" placeholder="Value"><button type="button" class="a-x" data-del>×</button>` };
+document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => { const d = document.createElement('div'); d.className = 'ed-line'; d.innerHTML = tpl[b.dataset.add](); document.querySelector(`[data-list=${b.dataset.add}]`).append(d); d.querySelector('input:not([type=checkbox])').focus(); }));
+document.addEventListener('click', e => { if (e.target.matches('[data-del]')) { e.target.closest('.ed-line').remove(); document.querySelectorAll('[data-list=tests] .ed-line input[type=checkbox]').forEach((c, i) => c.value = i); } });
+</script>
+<%- include('_foot') %>

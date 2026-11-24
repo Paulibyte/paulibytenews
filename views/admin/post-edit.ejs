@@ -1,0 +1,155 @@
+<%- include('_head', { editor: true }) %>
+<% const r = post.review || {}; const isEd = at('editor'); %>
+<script type="application/json" id="post-data"><%- JSON.stringify({
+  id: post.id, status: post.status, slug: post.slug || '', type: post.type, isEditor: isEd,
+  publishedAt: post.published_at || null, now: new Date().toISOString().replace('T',' ').slice(0,19),
+  review: { scores: r.scores || [{label:'Design',value:''},{label:'Performance',value:''},{label:'Battery',value:''},{label:'Value',value:''}], specs: r.specs || [], buy: r.buy || [] }
+}).replace(/</g, '\\u003c') %></script>
+
+<div class="ed-wrap" data-editor-root>
+  <div class="ed-main">
+    <div class="ed-status">
+      <em class="a-pill s-<%= post.status %>" data-status-pill><%= post.status %></em>
+      <span data-save-state class="ed-saved"><%= post.id ? 'All changes saved' : 'New article — not saved yet' %></span>
+      <span class="ed-counts" data-counts></span>
+    </div>
+    <% if (post.editor_note && post.status === 'rejected') { %><div class="a-error"><strong>Editor's note:</strong> <%= post.editor_note %></div><% } %>
+
+    <textarea id="f-title" class="ed-title" rows="1" placeholder="Write a sharp headline…" maxlength="200"><%= post.title %></textarea>
+    <input id="f-subtitle" class="ed-sub" placeholder="Standfirst — one line that sells the story (optional)" value="<%= post.subtitle %>">
+
+    <div class="ed-box">
+      <div id="toolbar" class="ed-toolbar">
+        <span class="ql-formats"><button class="ql-undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 18 18"><path class="ql-stroke" d="M4 7h7a4 4 0 0 1 0 8H8"/><path class="ql-stroke" d="M7 4 4 7l3 3"/></svg></button><button class="ql-redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 18 18"><path class="ql-stroke" d="M14 7H7a4 4 0 0 0 0 8h3"/><path class="ql-stroke" d="m11 4 3 3-3 3"/></svg></button></span>
+        <span class="ql-formats"><select class="ql-header" title="Text style"><option value="2">Heading</option><option value="3">Subheading</option><option value="4">Small heading</option><option selected>Normal</option></select>
+          <select class="ql-size" title="Text size"><option value="small"></option><option selected></option><option value="large"></option><option value="huge"></option></select></span>
+        <span class="ql-formats"><button class="ql-bold" title="Bold (Ctrl+B)"></button><button class="ql-italic" title="Italic (Ctrl+I)"></button><button class="ql-underline" title="Underline (Ctrl+U)"></button><button class="ql-strike" title="Strikethrough"></button><button class="ql-code" title="Inline code"></button><button class="ql-script" value="sub" title="Subscript"></button><button class="ql-script" value="super" title="Superscript"></button></span>
+        <span class="ql-formats"><select class="ql-color" title="Text colour"></select><select class="ql-background" title="Highlight"></select></span>
+        <span class="ql-formats"><button class="ql-list" value="ordered" title="Numbered list"></button><button class="ql-list" value="bullet" title="Bullet list"></button><button class="ql-list" value="check" title="Checklist"></button><button class="ql-indent" value="-1" title="Outdent"></button><button class="ql-indent" value="+1" title="Indent"></button><select class="ql-align" title="Align"></select></span>
+        <span class="ql-formats"><button class="ql-blockquote" title="Quote"></button><button class="ql-callout" title="Callout / tip box"><svg viewBox="0 0 18 18"><rect class="ql-stroke" x="2.5" y="3.5" width="13" height="11" rx="2"/><path class="ql-stroke" d="M5.5 7h7M5.5 10h4"/></svg></button><button class="ql-code-block" title="Code block"></button><button class="ql-divider" title="Divider line"><svg viewBox="0 0 18 18"><path class="ql-stroke" d="M2 9h14"/><circle class="ql-fill" cx="5" cy="9" r="1"/><circle class="ql-fill" cx="13" cy="9" r="1"/></svg></button></span>
+        <span class="ql-formats"><button class="ql-link" title="Link (Ctrl+K)"></button><button class="ql-image" title="Upload image"></button><button class="ql-gallery" title="Insert from media library"><svg viewBox="0 0 18 18"><rect class="ql-stroke" x="2.5" y="4.5" width="10" height="9" rx="1"/><path class="ql-stroke" d="M5.5 2.5h10v9"/><path class="ql-stroke" d="m3 12 3-3 3 3"/></svg></button><button class="ql-video" title="Embed video (YouTube / Vimeo / TikTok)"></button><button class="ql-table" title="Table"><svg viewBox="0 0 18 18"><rect class="ql-stroke" x="2.5" y="3.5" width="13" height="11" rx="1"/><path class="ql-stroke" d="M2.5 7.5h13M2.5 11h13M7 3.5v11M11 3.5v11"/></svg></button></span>
+        <span class="ql-formats"><button class="ql-clean" title="Clear formatting"></button><button class="ql-source" title="Edit HTML source"><svg viewBox="0 0 18 18"><path class="ql-stroke" d="m6 5-4 4 4 4M12 5l4 4-4 4"/></svg></button><button class="ql-fullscreen" title="Focus mode"><svg viewBox="0 0 18 18"><path class="ql-stroke" d="M3 7V3h4M15 7V3h-4M3 11v4h4M15 11v4h-4"/></svg></button></span>
+      </div>
+      <div class="ed-tabletools" data-tabletools hidden>
+        Table: <button data-t="insertRowAbove">+ Row above</button><button data-t="insertRowBelow">+ Row below</button><button data-t="insertColumnLeft">+ Col left</button><button data-t="insertColumnRight">+ Col right</button><button data-t="deleteRow">− Row</button><button data-t="deleteColumn">− Col</button><button data-t="deleteTable" class="danger">Delete table</button>
+      </div>
+      <div id="editor" class="ed-editor prose"><%- post.content %></div>
+      <textarea class="ed-source" data-source hidden spellcheck="false"></textarea>
+    </div>
+    <p class="ed-hint">Tips: paste or drag images straight into the text · Ctrl+S saves · <kbd>#</kbd> + space makes a heading, <kbd>-</kbd> + space a list, <kbd>></kbd> + space a quote.</p>
+
+    <section class="a-card ed-review" data-review-panel <%= post.type === 'review' ? '' : 'hidden' %>>
+      <h2>Review box <small>Shown as the score card, pros & cons, specs and “where to buy” buttons</small></h2>
+      <div class="a-form-grid">
+        <label>Product name<input id="r-product" value="<%= r.product || '' %>" placeholder="e.g. Nova X5"></label>
+        <label>Brand<input id="r-brand" value="<%= r.brand || '' %>"></label>
+        <label>Product type<input id="r-kind" value="<%= r.kind || '' %>" placeholder="Smartphone, Laptop, Earbuds…" list="kinds"></label>
+        <datalist id="kinds"><option>Smartphone</option><option>Laptop</option><option>Tablet</option><option>Earbuds</option><option>Headphones</option><option>Smartwatch</option><option>TV</option><option>Camera</option><option>Router</option><option>Power bank</option><option>Console</option><option>Software</option><option>App</option></datalist>
+        <label>Price<input id="r-price" value="<%= r.price || '' %>" placeholder="₦450,000"></label>
+        <label>Tested for<input id="r-tested" value="<%= r.tested_for || '' %>" placeholder="3 weeks"></label>
+        <label>Award<select id="r-award"><option value="">No award</option><% for (const a of ["Editor's Choice", 'Recommended', 'Best Value', 'Best for Gaming', 'Best Camera', 'Budget Pick', 'Innovation Award']) { %><option <%= r.award === a ? 'selected' : '' %>><%= a %></option><% } %></select></label>
+      </div>
+      <div class="ed-scores">
+        <div>
+          <h3>Score breakdown <button type="button" class="a-btn a-btn-sm" data-add-row="scores">+ Add</button></h3>
+          <div data-rows="scores"></div>
+        </div>
+        <div class="ed-overall">
+          <label>Overall score (0–10)<input id="r-score" type="number" step="0.1" min="0" max="10" value="<%= r.score ?? '' %>"></label>
+          <button type="button" class="a-btn a-btn-sm" data-avg>Use average of breakdown</button>
+          <div class="ed-ring" data-ring>–</div>
+        </div>
+      </div>
+      <label class="a-block">Verdict in one line<input id="r-verdict-short" value="<%= r.verdict_short || '' %>" maxlength="200" placeholder="The best battery life we've tested this year, held back by a slow charger."></label>
+      <label class="a-block">Full verdict<textarea id="r-verdict" rows="4"><%= r.verdict || '' %></textarea></label>
+      <div class="a-form-grid two">
+        <label>Pros (one per line)<textarea id="r-pros" rows="5"><%= (r.pros || []).join('\n') %></textarea></label>
+        <label>Cons (one per line)<textarea id="r-cons" rows="5"><%= (r.cons || []).join('\n') %></textarea></label>
+      </div>
+      <h3>Key specs <button type="button" class="a-btn a-btn-sm" data-add-row="specs">+ Add</button> <button type="button" class="a-btn a-btn-sm" data-spec-preset>Phone preset</button></h3>
+      <div data-rows="specs"></div>
+      <h3>Where to buy / affiliate links <button type="button" class="a-btn a-btn-sm" data-add-row="buy">+ Add</button></h3>
+      <p class="a-muted">Clicks are tracked and links get <code>rel="sponsored"</code> automatically.</p>
+      <div data-rows="buy"></div>
+    </section>
+  </div>
+
+  <aside class="ed-side">
+    <section class="a-card">
+      <h3>Publish</h3>
+      <% if (isEd) { %>
+        <label>Publish date & time <small>(leave empty for now; future = scheduled)</small><input type="datetime-local" id="f-publish-at" value="<%= toLocalInput(post.published_at) %>"></label>
+      <% } %>
+      <div class="ed-actions">
+        <button class="a-btn" data-act="save">Save<%= post.status === 'published' ? ' changes' : ' draft' %></button>
+        <button class="a-btn" data-preview>Preview</button>
+        <% if (isEd) { %>
+          <button class="a-btn a-btn-primary" data-act="publish"><%= post.status === 'published' ? 'Update live article' : 'Publish' %></button>
+          <% if (post.status === 'published') { %><button class="a-btn a-btn-ghost" data-act="unpublish">Unpublish</button><% } %>
+          <% if (post.status === 'pending') { %><button class="a-btn a-btn-ghost" data-act="reject">Return to writer…</button><% } %>
+        <% } else { %>
+          <button class="a-btn a-btn-primary" data-act="submit"><%= post.status === 'pending' ? 'Update submission' : 'Submit for review' %></button>
+        <% } %>
+      </div>
+      <% if (post.status === 'published' && post.slug) { %><a class="a-link" href="/article/<%= post.slug %>" target="_blank">View live article ↗</a><% } %>
+      <% if (post.id && (isEd || post.status !== 'published')) { %>
+        <form method="post" action="/admin/posts/<%= post.id %>/delete" data-confirm="Delete this article permanently? This cannot be undone."><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-del">Delete article</button></form>
+      <% } %>
+    </section>
+
+    <section class="a-card">
+      <h3>Article</h3>
+      <label>Format<select id="f-type"><% for (const [v, l] of [['news','News'],['review','Product review'],['feature','Feature'],['howto','How-to guide'],['opinion','Opinion']]) { %><option value="<%= v %>" <%= post.type === v ? 'selected' : '' %>><%= l %></option><% } %></select></label>
+      <label>Category<select id="f-category"><option value="">— Choose —</option><% for (const c of categories) { %><option value="<%= c.id %>" <%= post.category_id === c.id ? 'selected' : '' %>><%= c.name %></option><% } %></select></label>
+      <label>Linked Review Lab product<select id="f-product"><option value="">None</option><% for (const pr of products) { %><option value="<%= pr.id %>" <%= post.product_id === pr.id ? 'selected' : '' %>><%= pr.name %> (<%= pr.status %>)</option><% } %></select></label>
+      <label>Tags <small>comma separated</small><input id="f-tags" value="<%= post.tags %>" placeholder="android, 5g, budget phones"></label>
+      <% if (isEd) { %><label>URL slug<input id="f-slug" value="<%= post.slug || '' %>" placeholder="auto from headline"></label><% } %>
+    </section>
+
+    <section class="a-card">
+      <h3>Cover image</h3>
+      <div class="ed-cover" data-cover><% if (post.cover_image) { %><img src="<%= post.cover_image %>" alt=""><% } else { %><span>No cover image</span><% } %></div>
+      <input type="hidden" id="f-cover" value="<%= post.cover_image || '' %>">
+      <div class="ed-row"><label class="a-btn a-btn-sm">Upload<input type="file" accept="image/*" data-cover-upload hidden></label><button class="a-btn a-btn-sm" data-cover-library>Library</button><button class="a-btn a-btn-sm a-btn-ghost" data-cover-remove>Remove</button></div>
+      <label>Caption / credit<input id="f-caption" value="<%= post.cover_caption || '' %>" placeholder="Photo: PaulibyteNews"></label>
+    </section>
+
+    <section class="a-card">
+      <h3>Summary & flags</h3>
+      <label>Excerpt <small data-count-for="f-excerpt"></small><textarea id="f-excerpt" rows="3" maxlength="400" placeholder="Shown on cards and in search. Leave blank to auto-generate."><%= post.excerpt || '' %></textarea></label>
+      <% if (isEd) { %>
+      <label class="a-check"><input type="checkbox" id="f-featured" <%= post.is_featured ? 'checked' : '' %>> Feature on homepage hero</label>
+      <label class="a-check"><input type="checkbox" id="f-breaking" <%= post.is_breaking ? 'checked' : '' %>> Breaking news ticker</label>
+      <% } %>
+      <label class="a-check"><input type="checkbox" id="f-comments" <%= post.allow_comments ? 'checked' : '' %>> Allow comments</label>
+      <label class="a-check"><input type="checkbox" id="f-sponsored" <%= post.is_sponsored ? 'checked' : '' %>> Sponsored content (labelled)</label>
+      <input id="f-sponsor" value="<%= post.sponsor_name || '' %>" placeholder="Sponsor name" <%= post.is_sponsored ? '' : 'hidden' %>>
+    </section>
+
+    <section class="a-card">
+      <h3>SEO & sharing</h3>
+      <label>SEO title <small data-count-for="f-seo-title"></small><input id="f-seo-title" maxlength="120" value="<%= post.seo_title || '' %>" placeholder="Defaults to headline"></label>
+      <label>Meta description <small data-count-for="f-seo-desc"></small><textarea id="f-seo-desc" rows="3" maxlength="300" placeholder="Defaults to excerpt"><%= post.seo_description || '' %></textarea></label>
+      <div class="serp"><span class="serp-url">paulibytenews.com › article › <span data-serp-slug></span></span><span class="serp-title" data-serp-title></span><span class="serp-desc" data-serp-desc></span></div>
+    </section>
+
+    <% if (revisions.length) { %>
+    <section class="a-card">
+      <h3>Revision history</h3>
+      <div class="ed-revs"><% for (const rv of revisions) { %><button data-rev="<%= rv.id %>"><span><%= H.fmtDate(rv.created_at, true) %></span><small><%= rv.name %></small></button><% } %></div>
+    </section>
+    <% } %>
+  </aside>
+</div>
+
+<div class="modal" data-modal hidden>
+  <div class="modal-box">
+    <div class="modal-head"><h3>Media library</h3><label class="a-btn a-btn-sm a-btn-primary">Upload new<input type="file" accept="image/*" data-modal-upload hidden></label><button class="a-btn a-btn-sm" data-modal-close>Close</button></div>
+    <div class="modal-grid" data-modal-grid></div>
+  </div>
+</div>
+<div class="toast" data-toast hidden></div>
+
+<script src="/vendor/quill/quill.js"></script>
+<script src="/js/editor.js?v=1"></script>
+<%- include('_foot') %>

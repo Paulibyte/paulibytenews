@@ -1,0 +1,15 @@
+<%- include('partials/head') %>
+<div class="wrap narrow">
+  <header class="page-head"><h1>About <%= s.site_name %></h1><p><%= s.tagline %></p></header>
+  <div class="prose"><%- s.about_html %></div>
+  <section class="lab-section"><div class="sec-head"><h2>The team</h2></div>
+    <div class="team-grid">
+      <% for (const t of team) { %>
+      <a class="team-card" href="/author/<%= t.id %>"><span class="avatar lg"><% if (t.avatar) { %><img src="<%= t.avatar %>" alt=""><% } else { %><%= t.name[0] %><% } %></span>
+        <strong><%= t.name %></strong><span class="ab-label"><%= {admin:'Publisher',editor:'Editor-in-Chief',contributor:'Contributor'}[t.role] %></span></a>
+      <% } %>
+    </div>
+  </section>
+  <p class="muted">Contact: <a href="mailto:<%= s.contact_email %>"><%= s.contact_email %></a></p>
+</div>
+<%- include('partials/foot') %>

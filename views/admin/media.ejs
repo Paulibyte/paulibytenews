@@ -1,0 +1,18 @@
+<%- include('_head') %>
+<form class="a-card a-upload" method="post" action="/admin/media/upload?_csrf=<%= csrf %>" enctype="multipart/form-data">
+  <strong>Upload an image</strong><span class="a-muted">JPG, PNG, WebP or GIF up to 8 MB. Images are resized and converted to fast-loading WebP automatically.</span>
+  <input type="file" name="file" accept="image/*" required><button class="a-btn a-btn-primary">Upload</button>
+</form>
+<div class="a-media">
+  <% for (const m of items) { %>
+  <figure class="a-media-item">
+    <a href="<%= m.url %>" target="_blank"><img src="<%= m.url %>" alt="" loading="lazy"></a>
+    <figcaption><span title="<%= m.original %>"><%= m.original %></span><small><%= m.width ? m.width + '×' + m.height + ' · ' : '' %><%= Math.round(m.size / 1024) %> KB</small>
+      <button class="a-copy" onclick="navigator.clipboard.writeText(location.origin + '<%= m.url %>');this.textContent='Copied'">Copy URL</button>
+      <% if (at('editor')) { %><form method="post" action="/admin/media/<%= m.id %>/delete" data-confirm="Delete this image? Articles using it will show a broken image."><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-del">Delete</button></form><% } %>
+    </figcaption>
+  </figure>
+  <% } %>
+  <% if (!items.length) { %><p class="a-muted">No uploads yet.</p><% } %>
+</div>
+<%- include('_foot') %>

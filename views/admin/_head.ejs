@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title><%= title %> · <%= s.site_name %> Admin</title>
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<% if (typeof editor !== 'undefined' && editor) { %><link rel="stylesheet" href="/vendor/quill/quill.snow.css"><% } %>
+<link rel="stylesheet" href="/css/admin.css?v=1">
+<meta name="csrf" content="<%= csrf %>">
+</head>
+<body class="admin">
+<aside class="a-side" data-aside>
+  <a href="/admin" class="a-brand"><%- include('../partials/logo') %><span>Paulibyte<b>News</b></span></a>
+  <a class="a-new" href="/admin/posts/new">+ New article</a>
+  <nav>
+    <div class="a-label">Newsroom</div>
+    <a href="/admin" class="<%= path === '/' ? 'on' : '' %>">Dashboard</a>
+    <a href="/admin/posts" class="<%= path.startsWith('/posts') && !path.includes('new') ? 'on' : '' %>">Articles <% if (at('editor') && counts.pending) { %><em><%= counts.pending %></em><% } %></a>
+    <a href="/admin/posts/new?type=review" class="">Write a review</a>
+    <a href="/admin/lab" class="<%= path.startsWith('/lab') ? 'on' : '' %>">Review Lab</a>
+    <a href="/admin/media" class="<%= path.startsWith('/media') ? 'on' : '' %>">Media library</a>
+    <% if (at('editor')) { %>
+    <a href="/admin/categories" class="<%= path.startsWith('/categories') ? 'on' : '' %>">Categories</a>
+    <a href="/admin/comments" class="<%= path.startsWith('/comments') ? 'on' : '' %>">Comments <% if (counts.comments) { %><em><%= counts.comments %></em><% } %></a>
+    <a href="/admin/subscribers" class="<%= path.startsWith('/subscribers') ? 'on' : '' %>">Subscribers</a>
+    <% } %>
+    <% if (at('admin')) { %>
+    <div class="a-label">Business</div>
+    <a href="/admin/ads" class="<%= path.startsWith('/ads') ? 'on' : '' %>">Advertising <% if (counts.inquiries) { %><em><%= counts.inquiries %></em><% } %></a>
+    <a href="/admin/users" class="<%= path.startsWith('/users') ? 'on' : '' %>">Team</a>
+    <a href="/admin/settings" class="<%= path.startsWith('/settings') ? 'on' : '' %>">Settings</a>
+    <% } %>
+  </nav>
+  <div class="a-me">
+    <a href="/admin/profile" class="a-me-link"><span class="a-av"><% if (me.avatar) { %><img src="<%= me.avatar %>" alt=""><% } else { %><%= me.name[0] %><% } %></span><span><strong><%= me.name %></strong><small><%= ROLE_NAME[me.role] %></small></span></a>
+    <div class="a-me-actions"><a href="/" target="_blank">View site ↗</a><form method="post" action="/admin/logout"><input type="hidden" name="_csrf" value="<%= csrf %>"><button>Sign out</button></form></div>
+  </div>
+</aside>
+<div class="a-main">
+  <header class="a-top">
+    <button class="a-burger" data-aside-toggle aria-label="Menu">☰</button>
+    <h1><%= title %></h1>
+    <div class="a-top-actions"><%- typeof actions !== 'undefined' ? actions : '' %></div>
+  </header>
+  <% if (flash) { %><div class="a-flash"><%= flash %></div><% } %>
+  <div class="a-content">

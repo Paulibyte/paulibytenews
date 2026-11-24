@@ -1,0 +1,18 @@
+<%- include('_head', { actions: at('editor') ? '<a class="a-btn a-btn-primary" href="/admin/lab/new">+ Add product</a>' : '' }) %>
+<p class="a-muted">Products here appear on the public <a href="/lab" target="_blank">Review Lab</a> page, the homepage “Live from the Review Lab” strip and the sidebar. Move a product to <strong>Testing</strong>, post lab notes as you go, then write the review and link it.</p>
+<div class="a-lab-board">
+  <% for (const [st, label] of [['testing','Testing now'],['queued','Queue'],['published','Reviewed'],['longterm','Long-term']]) { const list = products.filter(p => p.status === st); %>
+  <section class="a-lab-col">
+    <h3><em class="a-pill s-<%= st %>"><%= label %></em> <span><%= list.length %></span></h3>
+    <% for (const p of list) { %>
+    <a class="a-lab-card" href="/admin/lab/<%= p.id %>">
+      <span class="a-lab-img"><% if (p.image) { %><img src="<%= p.image %>" alt=""><% } %></span>
+      <span class="a-lab-body"><strong><%= p.name %></strong><small><%= p.kind %><%= p.tester ? ' · ' + p.tester : '' %></small>
+        <% if (st === 'testing') { %><span class="a-prog"><i><b style="width:<%= p.progress %>%"></b></i><%= p.progress %>%</span><% } %>
+        <small><%= p.notes %> notes<%= st === 'queued' ? ' · ' + p.votes + ' votes' : '' %></small></span>
+    </a>
+    <% } %>
+  </section>
+  <% } %>
+</div>
+<%- include('_foot') %>

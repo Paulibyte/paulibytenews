@@ -1,0 +1,18 @@
+<%- include('_head') %>
+<div class="a-tabs"><% for (const st of ['pending','approved','spam']) { %><a href="?status=<%= st %>" class="<%= status === st ? 'on' : '' %>"><%= st %></a><% } %></div>
+<div class="a-stack">
+  <% if (!comments.length) { %><div class="a-card a-muted">No <%= status %> comments.</div><% } %>
+  <% for (const c of comments) { %>
+  <div class="a-card a-comment">
+    <div><strong><%= c.name %></strong> <span class="a-muted"><%= c.email %> · <%= H.timeAgo(c.created_at) %> · on <a href="/article/<%= c.slug %>#comments" target="_blank"><%= c.title %></a></span></div>
+    <p><%= c.body %></p>
+    <div class="a-row-actions">
+      <% for (const [act, l] of [['approved','Approve'],['pending','Unapprove'],['spam','Spam']]) { if (act !== c.status) { %>
+        <form method="post" action="/admin/comments/<%= c.id %>/<%= act %>"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-btn a-btn-sm <%= act === 'approved' ? 'a-btn-primary' : '' %>"><%= l %></button></form>
+      <% } } %>
+      <form method="post" action="/admin/comments/<%= c.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-del">Delete</button></form>
+    </div>
+  </div>
+  <% } %>
+</div>
+<%- include('_foot') %>

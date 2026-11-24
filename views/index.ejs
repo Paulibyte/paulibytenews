@@ -1,0 +1,85 @@
+<%- include('partials/head') %>
+
+<% if (featured.length) { const lead = featured[0], rest = featured.slice(1, 5); %>
+<section class="wrap hero">
+  <article class="hero-lead">
+    <a href="<%= lead.url %>" class="hero-img"><% if (lead.cover_image) { %><img src="<%= lead.cover_image %>" alt=""><% } %></a>
+    <div class="hero-text">
+      <div class="kicker"><% if (lead.type === 'review') { %><span class="kick-type">Review</span><% } %><a href="/category/<%= lead.cat_slug %>" style="--c:<%= lead.cat_color %>"><%= lead.cat_name %></a></div>
+      <h1><a href="<%= lead.url %>"><%= lead.title %></a></h1>
+      <p><%= lead.summary %></p>
+      <div class="meta"><span><%= lead.author_name %></span><span><%= H.timeAgo(lead.published_at) %></span><span><%= lead.minutes %> min read</span></div>
+    </div>
+    <% if (lead.review && lead.review.score) { %><span class="score-chip big"><%= Number(lead.review.score).toFixed(1) %></span><% } %>
+  </article>
+  <div class="hero-side">
+    <% for (const p of rest) { %><%- include('partials/card', { p, variant: 'row' }) %><% } %>
+  </div>
+</section>
+<% } %>
+
+<% if (bench.length) { %>
+<section class="bench-strip">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2><span class="live-dot"></span>Live from the Review Lab</h2>
+      <a href="/lab">What we're testing →</a>
+    </div>
+    <div class="bench-row">
+      <% for (const pr of bench) { %>
+      <a class="bench-card status-<%= pr.status %>" href="/lab/<%= pr.slug %>">
+        <span class="bench-img"><% if (pr.image) { %><img src="<%= pr.image %>" alt="" loading="lazy"><% } %></span>
+        <span class="bench-status"><%= pr.status === 'testing' ? 'Testing now' : 'In the queue' %></span>
+        <strong><%= pr.name %></strong>
+        <span class="bench-kind"><%= pr.kind %><%= pr.price ? ' · ' + pr.price : '' %></span>
+        <% if (pr.status === 'testing') { %><span class="bar"><i style="width:<%= pr.progress %>%"></i></span><span class="bench-foot"><%= pr.progress %>% tested<%= pr.tester_name ? ' · ' + pr.tester_name : '' %></span><% } else { %><span class="bench-foot"><%= pr.votes %> reader votes</span><% } %>
+      </a>
+      <% } %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<div class="wrap layout">
+  <div class="main-col">
+    <div class="sec-head"><h2>Latest</h2><a href="/search?q=">All stories →</a></div>
+    <div class="grid-cards">
+      <% latest.forEach((p, i) => { %>
+        <%- include('partials/card', { p, variant: 'std' }) %>
+        <% if (i === 5) { %><div class="grid-ad"><%- zone('home_feed', { placeholder: true }) %></div><% } %>
+      <% }) %>
+    </div>
+
+    <% if (reviews.length) { %>
+    <section class="reviews-band">
+      <div class="sec-head"><h2>Fresh reviews</h2><a href="/reviews">All reviews →</a></div>
+      <div class="review-grid">
+        <% for (const p of reviews) { %>
+        <a class="review-tile" href="<%= p.url %>">
+          <span class="rt-img"><% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt="" loading="lazy"><% } %></span>
+          <span class="rt-body">
+            <% if (p.review && p.review.award) { %><span class="award award-sm"><%= p.review.award %></span><% } %>
+            <strong><%= p.review && p.review.product || p.title %></strong>
+            <em><%= p.review && p.review.verdict_short || p.summary %></em>
+          </span>
+          <% if (p.review && p.review.score) { %><span class="rt-score"><b><%= Number(p.review.score).toFixed(1) %></b><small>/10</small></span><% } %>
+        </a>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% for (const b of catBlocks) { %>
+    <section class="cat-block" style="--c:<%= b.cat.color %>">
+      <div class="sec-head"><h2><i></i><%= b.cat.name %></h2><a href="/category/<%= b.cat.slug %>">More →</a></div>
+      <div class="cat-grid">
+        <%- include('partials/card', { p: b.posts[0], variant: 'std' }) %>
+        <div class="cat-list"><% for (const p of b.posts.slice(1)) { %><%- include('partials/card', { p, variant: 'mini' }) %><% } %></div>
+      </div>
+    </section>
+    <% } %>
+  </div>
+  <%- include('partials/sidebar') %>
+</div>
+
+<%- include('partials/foot') %>

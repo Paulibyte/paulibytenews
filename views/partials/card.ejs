@@ -1,0 +1,17 @@
+<% const v = (typeof variant !== 'undefined') ? variant : 'std'; %>
+<article class="card card-<%= v %>">
+  <a href="<%= p.url %>" class="card-img">
+    <% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt="" loading="lazy"><% } else { %><span class="img-fallback"></span><% } %>
+    <% if (p.type === 'review' && p.review && p.review.score) { %><span class="score-chip"><%= Number(p.review.score).toFixed(1) %></span><% } %>
+    <% if (p.is_sponsored) { %><span class="spons-chip">Sponsored</span><% } %>
+  </a>
+  <div class="card-body">
+    <div class="kicker">
+      <% if (p.type === 'review') { %><span class="kick-type">Review</span><% } else if (p.type !== 'news') { %><span class="kick-type"><%= {feature:'Feature',howto:'How-To',opinion:'Opinion'}[p.type] %></span><% } %>
+      <% if (p.cat_name) { %><a href="/category/<%= p.cat_slug %>" style="--c:<%= p.cat_color %>"><%= p.cat_name %></a><% } %>
+    </div>
+    <h3><a href="<%= p.url %>"><%= p.title %></a></h3>
+    <% if (v !== 'mini') { %><p class="dek"><%= p.summary %></p><% } %>
+    <div class="meta"><span><%= p.author_name %></span><span><%= H.timeAgo(p.published_at) %></span><span><%= p.minutes %> min read</span></div>
+  </div>
+</article>

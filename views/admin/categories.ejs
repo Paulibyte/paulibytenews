@@ -1,0 +1,32 @@
+<%- include('_head') %>
+<div class="a-grid2">
+  <section class="a-card">
+    <h2>Sections</h2>
+    <% for (const c of cats) { %>
+    <form method="post" action="/admin/categories" class="a-cat-row">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="id" value="<%= c.id %>">
+      <input type="color" name="color" value="<%= c.color %>" aria-label="Colour">
+      <input name="name" value="<%= c.name %>" aria-label="Name">
+      <input name="description" value="<%= c.description %>" placeholder="Description" aria-label="Description" class="hide-m">
+      <input name="sort" type="number" value="<%= c.sort %>" class="a-num" aria-label="Order" title="Menu order">
+      <span class="a-muted"><%= c.n %></span>
+      <button class="a-btn a-btn-sm">Save</button>
+    </form>
+    <% } %>
+  </section>
+  <section class="a-card">
+    <h2>Add a section</h2>
+    <form method="post" action="/admin/categories" class="a-stack">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <label>Name<input name="name" required></label>
+      <label>Description<input name="description"></label>
+      <label>Colour<input type="color" name="color" value="#2F6BFF"></label>
+      <label>Menu order<input type="number" name="sort" value="10"></label>
+      <button class="a-btn a-btn-primary">Add section</button>
+    </form>
+    <h3 class="a-mt">Delete a section</h3>
+    <p class="a-muted">Articles in a deleted section become uncategorised.</p>
+    <% for (const c of cats) { %><form method="post" action="/admin/categories/<%= c.id %>/delete" class="inline" data-confirm="Delete <%= c.name %>?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="a-chip-del"><%= c.name %> ×</button></form><% } %>
+  </section>
+</div>
+<%- include('_foot') %>

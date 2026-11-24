@@ -1,0 +1,43 @@
+</main>
+
+<section class="newsletter" id="newsletter">
+  <div class="wrap nl-in">
+    <div>
+      <h2>Get the PaulibyteNews brief</h2>
+      <p>The week's biggest tech stories, new reviews and what just landed on our test bench — once a week, no spam.</p>
+    </div>
+    <form action="/subscribe" method="post" class="nl-form" data-subscribe>
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="email" name="email" required placeholder="you@example.com" aria-label="Email address">
+      <button class="btn btn-accent">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<div class="wrap"><%- zone('footer') %></div>
+
+<footer class="footer">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="/"><%- include('logo') %><span class="brand-word">Paulibyte<b>News</b></span></a>
+      <p><%= s.tagline %></p>
+      <div class="socials">
+        <% for (const [k, l] of [['social_x','X'],['social_facebook','Facebook'],['social_instagram','Instagram'],['social_youtube','YouTube'],['social_linkedin','LinkedIn'],['social_tiktok','TikTok']]) { if (s[k]) { %><a href="<%= s[k] %>" target="_blank" rel="noopener"><%= l %></a><% } } %>
+      </div>
+    </div>
+    <div><h4>Sections</h4><% for (const c of navCats.slice(0, 7)) { %><a href="/category/<%= c.slug %>"><%= c.name %></a><% } %></div>
+    <div><h4>Explore</h4><a href="/reviews">Reviews</a><a href="/lab">Review Lab</a><a href="/type/howto">How-To</a><a href="/type/feature">Features</a><a href="/type/opinion">Opinion</a></div>
+    <div><h4>Company</h4><a href="/about">About us</a><a href="/advertise">Advertise</a><a href="mailto:<%= s.contact_email %>">Contact</a><a href="/feed.xml">RSS</a><a href="/admin/login">Writers</a></div>
+  </div>
+  <div class="wrap foot-base">
+    <span>© <%= new Date().getFullYear() %> <%= s.site_name %>. All rights reserved.</span>
+    <span>Some links in reviews are affiliate links; we may earn a commission. It never affects our scores.</span>
+  </div>
+</footer>
+
+<% const anchor = H.pickAd('mobile_anchor'); if (anchor) { %>
+<div class="anchor-ad" data-anchor><button aria-label="Close ad" data-close-anchor>×</button><%- H.adHtml(anchor, 'mobile_anchor') %></div>
+<% } %>
+<script src="/js/site.js?v=1" defer></script>
+</body>
+</html>

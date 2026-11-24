@@ -1,0 +1,162 @@
+<%
+const r = p.review;
+const url = s.site_url + p.url;
+const img = p.cover_image ? (p.cover_image.startsWith('http') ? p.cover_image : s.site_url + p.cover_image) : undefined;
+const ld = r && r.score ? {
+  '@context': 'https://schema.org', '@type': 'Review', name: p.title, datePublished: p.published_at,
+  author: { '@type': 'Person', name: p.author_name }, publisher: { '@type': 'Organization', name: s.site_name },
+  itemReviewed: { '@type': 'Product', name: r.product || p.title, image: img, brand: r.brand ? { '@type': 'Brand', name: r.brand } : undefined },
+  reviewRating: { '@type': 'Rating', ratingValue: r.score, bestRating: 10, worstRating: 0 }, reviewBody: r.verdict || p.summary,
+} : {
+  '@context': 'https://schema.org', '@type': 'NewsArticle', headline: p.title, image: img ? [img] : undefined,
+  datePublished: p.published_at, dateModified: p.updated_at, author: [{ '@type': 'Person', name: p.author_name }],
+  publisher: { '@type': 'Organization', name: s.site_name, logo: { '@type': 'ImageObject', url: s.site_url + '/img/icon-512.png' } },
+};
+const tags = (p.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+const ring = r && r.score ? Math.round((Number(r.score) / 10) * 283) : 0;
+%>
+<%- include('partials/head', { jsonld: ld }) %>
+<div class="progress-bar" data-progress></div>
+
+<% if (preview) { %><div class="wrap"><div class="flash warn">Preview — status: <strong><%= p.status %></strong>. Only signed-in staff can see this page.</div></div><% } %>
+
+<article class="wrap layout article">
+  <div class="main-col">
+    <header class="art-head">
+      <nav class="crumbs"><a href="/">Home</a><% if (p.cat_name) { %> / <a href="/category/<%= p.cat_slug %>"><%= p.cat_name %></a><% } %><% if (p.type === 'review') { %> / <a href="/reviews">Reviews</a><% } %></nav>
+      <div class="kicker">
+        <% if (p.type !== 'news') { %><span class="kick-type"><%= {review:'Review',feature:'Feature',howto:'How-To',opinion:'Opinion'}[p.type] %></span><% } %>
+        <% if (p.cat_name) { %><a href="/category/<%= p.cat_slug %>" style="--c:<%= p.cat_color %>"><%= p.cat_name %></a><% } %>
+        <% if (p.is_breaking) { %><span class="kick-breaking">Breaking</span><% } %>
+      </div>
+      <h1><%= p.title %></h1>
+      <% if (p.subtitle) { %><p class="art-sub"><%= p.subtitle %></p><% } %>
+      <% if (p.is_sponsored) { %><div class="sponsored-note">Sponsored<%= p.sponsor_name ? ' by ' + p.sponsor_name : '' %> — this content was paid for by an advertiser.</div><% } %>
+      <div class="byline">
+        <a href="/author/<%= p.author_id %>" class="avatar"><% if (p.author_avatar) { %><img src="<%= p.author_avatar %>" alt=""><% } else { %><%= (p.author_name || '?')[0] %><% } %></a>
+        <div><a href="/author/<%= p.author_id %>" class="by-name"><%= p.author_name %></a>
+          <span><time datetime="<%= p.published_at %>"><%= H.fmtDate(p.published_at, true) %></time> · <%= p.minutes %> min read<% if (p.updated_at && p.published_at && p.updated_at.slice(0,10) > p.published_at.slice(0,10)) { %> · Updated <%= H.fmtDate(p.updated_at) %><% } %></span></div>
+        <div class="share" data-share data-title="<%= p.title %>" data-url="<%= url %>">
+          <a href="https://wa.me/?text=<%= encodeURIComponent(p.title + ' ' + url) %>" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WA</a>
+          <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(p.title) %>&url=<%= encodeURIComponent(url) %>" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(url) %>" target="_blank" rel="noopener" aria-label="Share on Facebook">f</a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(url) %>" target="_blank" rel="noopener" aria-label="Share on LinkedIn">in</a>
+          <button data-copy aria-label="Copy link">Copy link</button>
+        </div>
+      </div>
+    </header>
+
+    <% if (p.cover_image) { %>
+    <figure class="art-cover"><img src="<%= p.cover_image %>" alt="<%= p.cover_caption || p.title %>"><% if (p.cover_caption) { %><figcaption><%= p.cover_caption %></figcaption><% } %></figure>
+    <% } %>
+
+    <% if (product) { %>
+    <a class="lab-badge" href="/lab/<%= product.slug %>">
+      <span class="live-dot"></span><span><strong>Tested in the PaulibyteNews Review Lab.</strong> See the test log, specs and checklist for the <%= product.name %> →</span>
+    </a>
+    <% } %>
+
+    <% if (r && r.score) { %>
+    <section class="review-summary" id="review-summary">
+      <div class="rs-top">
+        <div class="score-ring" aria-label="Score <%= r.score %> out of 10">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="ring-bg"/><circle cx="50" cy="50" r="45" class="ring-fg" style="stroke-dasharray:<%= ring %> 283"/></svg>
+          <span><b><%= Number(r.score).toFixed(1) %></b><small><%= H.scoreLabel(Number(r.score)) %></small></span>
+        </div>
+        <div class="rs-info">
+          <% if (r.award) { %><span class="award"><%= r.award %></span><% } %>
+          <h2><%= r.product || p.title %></h2>
+          <% if (r.price) { %><div class="rs-price"><%= r.price %></div><% } %>
+          <% if (r.verdict_short) { %><p class="rs-verdict"><%= r.verdict_short %></p><% } %>
+          <% if (r.tested_for) { %><p class="rs-tested">Tested for <%= r.tested_for %></p><% } %>
+        </div>
+      </div>
+      <% if ((r.pros && r.pros.length) || (r.cons && r.cons.length)) { %>
+      <div class="proscons">
+        <div class="pros"><h4>What we like</h4><ul><% for (const x of (r.pros || [])) { %><li><%= x %></li><% } %></ul></div>
+        <div class="cons"><h4>What we don't</h4><ul><% for (const x of (r.cons || [])) { %><li><%= x %></li><% } %></ul></div>
+      </div>
+      <% } %>
+      <% if (r.buy && r.buy.length) { %>
+      <div class="buy-row">
+        <% r.buy.forEach((b, i) => { if (b.url) { %><a class="buy-btn" href="/go/<%= p.id %>/<%= i %>" target="_blank" rel="sponsored nofollow noopener"><span><%= b.label %></span><b><%= b.price %></b></a><% } }) %>
+      </div>
+      <% } %>
+      <%- zone('review_box') %>
+      <a class="rs-jump" href="#verdict">Jump to verdict & full specs ↓</a>
+    </section>
+    <% } %>
+
+    <div class="art-body prose"><%- p.body %></div>
+
+    <% if (r && (r.scores && r.scores.length || r.verdict || (r.specs && r.specs.length))) { %>
+    <section class="verdict" id="verdict">
+      <h2>Verdict</h2>
+      <% if (r.verdict) { %><p class="verdict-text"><%= r.verdict %></p><% } %>
+      <div class="verdict-grid">
+        <% if (r.scores && r.scores.length) { %>
+        <div class="breakdown">
+          <h4>Score breakdown</h4>
+          <% for (const sc of r.scores) { %>
+          <div class="bd-row"><span><%= sc.label %></span><span class="bd-bar"><i style="width:<%= Math.min(100, Number(sc.value) * 10) %>%"></i></span><b><%= Number(sc.value).toFixed(1) %></b></div>
+          <% } %>
+          <div class="bd-total"><span>Overall</span><b><%= Number(r.score).toFixed(1) %>/10</b></div>
+        </div>
+        <% } %>
+        <% if (r.specs && r.specs.length) { %>
+        <div class="specs">
+          <h4>Key specs</h4>
+          <table><% for (const sp of r.specs) { %><tr><th><%= sp.label %></th><td><%= sp.value %></td></tr><% } %></table>
+        </div>
+        <% } %>
+      </div>
+      <% if (r.buy && r.buy.length) { %>
+      <div class="buy-row"><% r.buy.forEach((b, i) => { if (b.url) { %><a class="buy-btn" href="/go/<%= p.id %>/<%= i %>" target="_blank" rel="sponsored nofollow noopener"><span><%= b.label %></span><b><%= b.price %></b></a><% } }) %></div>
+      <p class="aff-note">We may earn a commission when you buy through these links. This never influences our verdict.</p>
+      <% } %>
+    </section>
+    <% } %>
+
+    <% if (tags.length) { %><div class="tags"><% for (const t of tags) { %><a href="/tag/<%= encodeURIComponent(t.toLowerCase()) %>">#<%= t %></a><% } %></div><% } %>
+
+    <%- zone('article_end', { placeholder: true }) %>
+
+    <% if (author) { %>
+    <div class="author-box">
+      <a href="/author/<%= author.id %>" class="avatar lg"><% if (author.avatar) { %><img src="<%= author.avatar %>" alt=""><% } else { %><%= author.name[0] %><% } %></a>
+      <div><span class="ab-label">Written by</span><a href="/author/<%= author.id %>" class="ab-name"><%= author.name %></a><p><%= author.bio %></p></div>
+    </div>
+    <% } %>
+
+    <nav class="prevnext">
+      <% if (prev) { %><a href="/article/<%= prev.slug %>"><small>← Previous</small><%= prev.title %></a><% } else { %><span></span><% } %>
+      <% if (next) { %><a href="/article/<%= next.slug %>" class="nx"><small>Next →</small><%= next.title %></a><% } %>
+    </nav>
+
+    <% if (p.allow_comments) { %>
+    <section class="comments" id="comments">
+      <h3>Comments (<%= comments.length %>)</h3>
+      <% if (commentOk) { %><div class="flash">Thanks! Your comment is awaiting moderation.</div><% } %>
+      <% for (const c of comments) { %>
+        <div class="comment"><div class="avatar sm"><%= c.name[0] %></div><div><strong><%= c.name %></strong> <span class="c-time"><%= H.timeAgo(c.created_at) %></span><p><%= c.body %></p></div></div>
+      <% } %>
+      <form method="post" action="/article/<%= p.slug %>/comment" class="comment-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="two"><input name="name" required maxlength="80" placeholder="Your name" aria-label="Name"><input name="email" type="email" maxlength="120" placeholder="Email (not published)" aria-label="Email"></div>
+        <textarea name="body" required maxlength="3000" rows="4" placeholder="Join the conversation…" aria-label="Comment"></textarea>
+        <button class="btn btn-accent">Post comment</button>
+      </form>
+    </section>
+    <% } %>
+
+    <% if (related.length) { %>
+    <section class="related"><div class="sec-head"><h2>Keep reading</h2></div>
+      <div class="grid-cards g2"><% for (const rp of related) { %><%- include('partials/card', { p: rp, variant: 'std' }) %><% } %></div>
+    </section>
+    <% } %>
+  </div>
+  <%- include('partials/sidebar') %>
+</article>
+
+<%- include('partials/foot') %>

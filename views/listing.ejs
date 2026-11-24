@@ -1,0 +1,32 @@
+<%- include('partials/head') %>
+<div class="wrap">
+  <header class="page-head" style="--c:<%= typeof accent !== 'undefined' && accent ? accent : 'var(--accent)' %>">
+    <% if (typeof author !== 'undefined' && author) { %>
+      <div class="author-head"><span class="avatar lg"><% if (author.avatar) { %><img src="<%= author.avatar %>" alt=""><% } else { %><%= author.name[0] %><% } %></span>
+      <div><span class="ab-label"><%= {admin:'Publisher',editor:'Editor-in-Chief',contributor:'Contributor'}[author.role] %></span><h1><%= heading %></h1><% if (sub) { %><p><%= sub %></p><% } %></div></div>
+    <% } else { %>
+      <h1><%= heading %></h1><% if (typeof sub !== 'undefined' && sub) { %><p><%= sub %></p><% } %>
+    <% } %>
+    <% if (typeof q !== 'undefined') { %>
+      <form action="/search" class="inline-search"><input name="q" type="search" value="<%= q %>" placeholder="Search…" aria-label="Search"><button class="btn btn-accent">Search</button></form>
+      <% if (q) { %><p class="count"><%= total %> result<%= total === 1 ? '' : 's' %></p><% } %>
+    <% } %>
+  </header>
+</div>
+<div class="wrap layout">
+  <div class="main-col">
+    <% if (!posts.length) { %><div class="empty">Nothing here yet. <a href="/">Back to the homepage</a></div><% } %>
+    <div class="grid-cards">
+      <% posts.forEach((p, i) => { %><%- include('partials/card', { p, variant: 'std' }) %><% if (i === 5) { %><div class="grid-ad"><%- zone('home_feed') %></div><% } %><% }) %>
+    </div>
+    <% if (pages > 1) { const base = path + (typeof q !== 'undefined' && q ? `?q=${encodeURIComponent(q)}&` : '?'); %>
+    <nav class="pager">
+      <% if (page > 1) { %><a href="<%= base %>page=<%= page - 1 %>">← Newer</a><% } %>
+      <span>Page <%= page %> of <%= pages %></span>
+      <% if (page < pages) { %><a href="<%= base %>page=<%= page + 1 %>">Older →</a><% } %>
+    </nav>
+    <% } %>
+  </div>
+  <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/foot') %>
